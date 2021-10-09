@@ -6,9 +6,25 @@
     android:layout_height="match_parent"
     tools:context="com.getcapacitor.BridgeActivity"
     >
+    
+    <ImageButton
+        android:id="@+id/flashlight"
+        android:background="@drawable/rounded"
+        android:layout_height="65dp"
+        android:layout_width="65dp"
+        android:src="@drawable/flashlight_image"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
+        android:layout_gravity="bottom|right"
+        android:contentDescription="@string/flashlight_icon_desc"
+        android:layout_margin="15dp"
+        android:padding="10dp"
+        android:translationZ="2dp"
+        android:visibility="invisible"/> 
 
     <WebView
         android:id="@+id/webview"
+        android:translationZ="1dp"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 

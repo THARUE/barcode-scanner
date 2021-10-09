@@ -1,1 +1,5 @@
-<resources></resources>
+<resources>
+<string
+    name="flashlight_icon_desc"
+    >Flashlight Toggle Button</string>
+</resources>

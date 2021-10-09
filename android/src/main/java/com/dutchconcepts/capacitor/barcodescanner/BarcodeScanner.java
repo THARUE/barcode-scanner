@@ -13,8 +13,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import androidx.activity.result.ActivityResult;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -83,6 +85,14 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
         map.put("RSS_14", BarcodeFormat.RSS_14);
         map.put("RSS_EXPANDED", BarcodeFormat.RSS_EXPANDED);
         return Collections.unmodifiableMap(map);
+    }
+
+    public boolean getIsTorchOn() {
+        return this.isTorchOn;
+    }
+
+    public void setIsTorchOn(boolean on) {
+        this.isTorchOn = on;
     }
 
     private boolean hasCamera() {
@@ -275,6 +285,35 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
             );
     }
 
+    private void showTorchButton() {
+        getActivity()
+            .runOnUiThread(
+                () -> {
+                    ImageButton ib = (ImageButton) getActivity().findViewById(R.id.flashlight);
+                    ib.setVisibility(View.VISIBLE);
+                    ib.setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                setTorch(!getIsTorchOn());
+                            }
+                        }
+                    );
+                }
+            );
+    }
+
+    private void removeTorchButton() {
+        getActivity()
+            .runOnUiThread(
+                () -> {
+                    ImageButton ib = (ImageButton) getActivity().findViewById(R.id.flashlight);
+                    ib.setVisibility(View.INVISIBLE);
+                    ib.setOnClickListener(null);
+                }
+            );
+    }
+
     @Override
     public void barcodeResult(BarcodeResult barcodeResult) {
         JSObject jsObject = new JSObject();
@@ -332,6 +371,7 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
     public void startScan(PluginCall call) {
         saveCall(call);
         scan();
+        showTorchButton();
     }
 
     @PluginMethod
@@ -346,6 +386,7 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
             }
         }
 
+        removeTorchButton();
         destroy();
         call.resolve();
     }
@@ -478,7 +519,7 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
             _checkPermission(call, true);
         } else {
             _checkPermission(call, false);
-        }   
+        }
     }
 
     @PluginMethod
