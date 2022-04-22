@@ -1,4 +1,4 @@
-package com.dutchconcepts.capacitor.barcodescanner;
+package com.getcapacitor.community.barcodescanner;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -50,7 +50,7 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
 
     private BarcodeView mBarcodeView;
 
-    private int currentCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+    // private int currentCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
 
     private boolean isScanning = false;
     private boolean shouldRunScan = false;
@@ -58,6 +58,8 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
     private boolean didRunCameraPrepare = false;
     private boolean isBackgroundHidden = false;
     private boolean isTorchOn = false;
+    private boolean scanningPaused = false;
+    private String lastScanResult = null;
 
     // declare a map constant for allowed barcode formats
     private static final Map<String, BarcodeFormat> supportedFormats = supportedFormats();
@@ -104,9 +106,8 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
         }
     }
 
-    private void setupCamera() {
-        // @TODO(): add support for switching cameras
-        // @TODO(): add support for toggling torch
+    private void setupCamera(String cameraDirection) {
+        // @TODO(): add support for switching cameras while scanning is running
 
         getActivity()
             .runOnUiThread(
@@ -116,7 +117,9 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
 
                     // Configure the camera (front/back)
                     CameraSettings settings = new CameraSettings();
-                    settings.setRequestedCameraId(currentCameraId);
+                    settings.setRequestedCameraId(
+                        "front".equals(cameraDirection) ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK
+                    );
                     settings.setContinuousFocusEnabled(true);
                     mBarcodeView.setCameraSettings(settings);
 
@@ -164,13 +167,13 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
         }
     }
 
-    private void prepare() {
+    private void _prepare(PluginCall call) {
         // undo previous setup
         // because it may be prepared with a different config
         dismantleCamera();
 
         // setup camera with new config
-        setupCamera();
+        setupCamera(call.getString("cameraDirection", "back"));
 
         // indicate this method was run
         didRunCameraPrepare = true;
@@ -182,7 +185,6 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
 
     private void destroy() {
         showBackground();
-
         dismantleCamera();
         this.setTorch(false);
     }
@@ -237,7 +239,7 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
                     Log.d("scanner", "No permission to use camera. Did you request it yet?");
                 } else {
                     shouldRunScan = true;
-                    prepare();
+                    _prepare(getSavedCall());
                 }
             }
         } else {
@@ -252,7 +254,12 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
                 .runOnUiThread(
                     () -> {
                         if (mBarcodeView != null) {
-                            mBarcodeView.decodeSingle(b);
+                            PluginCall call = getSavedCall();
+                            if (call != null && call.isKeptAlive()) {
+                                mBarcodeView.decodeContinuous(b);
+                            } else {
+                                mBarcodeView.decodeSingle(b);
+                            }
                         }
                     }
                 );
@@ -321,15 +328,26 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
         if (barcodeResult.getText() != null) {
             jsObject.put("hasContent", true);
             jsObject.put("content", barcodeResult.getText());
+            jsObject.put("format", barcodeResult.getBarcodeFormat().name());
         } else {
             jsObject.put("hasContent", false);
         }
 
-        if (getSavedCall() != null) {
-            getSavedCall().resolve(jsObject);
-        }
+        PluginCall call = getSavedCall();
 
-        destroy();
+        if (call != null) {
+            if (call.isKeptAlive()) {
+                if (!scanningPaused && barcodeResult.getText() != null && !barcodeResult.getText().equals(lastScanResult)) {
+                    lastScanResult = barcodeResult.getText();
+                    call.resolve(jsObject);
+                }
+            } else {
+                call.resolve(jsObject);
+                destroy();
+            }
+        } else {
+            destroy();
+        }
     }
 
     @Override
@@ -351,7 +369,7 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
 
     @PluginMethod
     public void prepare(PluginCall call) {
-        prepare();
+        _prepare(call);
         call.resolve();
     }
 
@@ -388,6 +406,28 @@ public class BarcodeScanner extends Plugin implements BarcodeCallback {
 
         removeTorchButton();
         destroy();
+        call.resolve();
+    }
+
+    @PluginMethod(returnType = PluginMethod.RETURN_CALLBACK)
+    public void startScanning(PluginCall call) {
+        call.setKeepAlive(true);
+        lastScanResult = null; // reset when scanning again
+        saveCall(call);
+        scanningPaused = false;
+        scan();
+    }
+
+    @PluginMethod
+    public void pauseScanning(PluginCall call) {
+        scanningPaused = true;
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void resumeScanning(PluginCall call) {
+        lastScanResult = null; // reset when scanning again
+        scanningPaused = false;
         call.resolve();
     }
 

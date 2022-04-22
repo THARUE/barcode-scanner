@@ -6,8 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2021?style=flat-square" />
-  <!-- <a href="https://github.com/DutchConcepts/capacitor-barcode-scanner/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/workflow/status/dutchconcepts/capacitor-barcode-scanner/CI?style=flat-square" /></a> -->
+  <img src="https://img.shields.io/maintenance/yes/2022?style=flat-square" />
   <a href="https://www.npmjs.com/package/@capacitor-community/barcode-scanner"><img src="https://img.shields.io/npm/l/@capacitor-community/barcode-scanner?style=flat-square" /></a>
 <br>
   <a href="https://www.npmjs.com/package/@capacitor-community/barcode-scanner"><img src="https://img.shields.io/npm/dw/@capacitor-community/barcode-scanner?style=flat-square" /></a>
@@ -27,9 +26,10 @@
 
 ## Maintainers
 
-| Maintainer | GitHub                                | Social |
+| Maintainer | GitHub                                | Active |
 | ---------- | ------------------------------------- | ------ |
-| tafelnl    | [tafelnl](https://github.com/tafelnl) |        |
+| thegnuu    | [thegnuu](https://github.com/thegnuu) | yes    |
+| tafelnl    | [tafelnl](https://github.com/tafelnl) | no     |
 
 ## About
 
@@ -353,7 +353,10 @@ const checkPermission = async () => {
 You can setup the scanner to only recognize specific types of barcodes like this:
 
 ```ts
-import { BarcodeScanner, SupportedFormat } from '@capacitor-community/barcode-scanner';
+import {
+  BarcodeScanner,
+  SupportedFormat,
+} from '@capacitor-community/barcode-scanner';
 
 BarcodeScanner.startScan({ targetedFormats: [SupportedFormat.QR_CODE] }); // this will now only target QR-codes
 ```

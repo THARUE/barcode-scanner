@@ -1,6 +1,6 @@
 {
   "name": "@ahaselden/barcode-scanner",
-  "version": "2.1.2",
+  "version": "2.1.1",
   "description": "A fast and efficient (QR) barcode scanner for Capacitor",
   "main": "dist/plugin.js",
   "module": "dist/esm/index.js",
@@ -74,7 +74,10 @@
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
   "eslintConfig": {
-    "extends": "@ionic/eslint-config/recommended"
+    "extends": "@ionic/eslint-config/recommended",
+    "ignorePatterns": [
+      "dist/**/*"
+    ]
   },
   "husky": {
     "hooks": {
