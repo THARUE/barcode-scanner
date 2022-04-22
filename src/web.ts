@@ -54,22 +54,6 @@ export class BarcodeScannerWeb
   async openAppSettings(): Promise<void> {
     throw this.unimplemented('Not implemented on web.');
   }
-<<<<<<< HEAD
-  
-  disableTorch(): Promise<void> {
-    throw this.unimplemented('Not implemented on web.');
-  }
-
-  enableTorch(): Promise<void> {
-    throw this.unimplemented('Not implemented on web.');
-  }
-
-  toggleTorch(): Promise<void> {
-    throw this.unimplemented('Not implemented on web.');
-  }
-
-  getTorchState(): Promise<TorchStateResult> {
-=======
 
   async disableTorch(): Promise<void> {
     throw this.unimplemented('Not implemented on web.');
@@ -84,7 +68,6 @@ export class BarcodeScannerWeb
   }
 
   async getTorchState(): Promise<TorchStateResult> {
->>>>>>> 2a837bbdd7a6794f096c3d84f2423c041981509e
     throw this.unimplemented('Not implemented on web.');
   }
 }
